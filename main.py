@@ -3,6 +3,7 @@ from tkinter import messagebox
 import requests
 from lxml import html
 import psycopg2
+from docx import Document
 
 # Database connection
 def conn_Db():
@@ -139,14 +140,16 @@ class ScrapperNews:
 
         self.label = tk.Label(master, text="Enter the News Website URL:")
         self.entry = tk.Entry(master, width=50)
-        self.button = tk.Button(master, text="Scrape and Display the News", command=self.scrape_and_display)
+        self.button_scrape = tk.Button(master, text="Scrape and Display the News", command=self.scrape_and_display)
+        self.button_download = tk.Button(master, text="Download News as .docx", command=self.download_news)
         self.result_label = tk.Label(master, text="", justify="left", anchor="w", wraplength=700)
 
         self.articles = []
 
         self.label.pack()
         self.entry.pack()
-        self.button.pack()
+        self.button_scrape.pack()
+        self.button_download.pack()
         self.result_label.pack()
 
         create_database()
@@ -161,6 +164,17 @@ class ScrapperNews:
             self.result_label.config(text=f"Articles:\n{titles_summary}", font=("Arial", 12, "bold"), justify="left", anchor="w", wraplength=700)
         else:
             messagebox.showerror("Error", "Error scraping and storing news.")
+
+    def download_news(self):
+        document = Document()
+        for article in self.articles:
+            document.add_heading(article['title'], level=1)
+            document.add_paragraph(article['content'])
+            document.add_paragraph(f"Source: {article['source']}")
+            document.add_page_break()
+
+        document.save("news.docx")
+        messagebox.showinfo("Download Complete", "News has been downloaded as 'news.docx'.")
 
 def main():
     create_users_table()
